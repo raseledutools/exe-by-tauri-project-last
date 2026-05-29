@@ -10,7 +10,7 @@ use std::process::Command;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
-use tauri::{AppHandle, CustomMenuItem, Manager, State, SystemTray, SystemTrayMenu};
+use tauri::State;
 use serde::{Deserialize, Serialize};
 
 // ==========================================
@@ -176,7 +176,7 @@ fn enforce_strict_protocols(strict: &StrictSettings) {
         let mut skip = false;
         for line in reader.lines().flatten() {
             if line.contains("# RasFocus Strict Start") { skip = true; }
-            if !skip { clean_lines.push(line); }
+            if !skip { clean_lines.push(line.clone()); }
             if line.contains("# RasFocus Strict End") { skip = false; }
         }
     }
