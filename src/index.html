@@ -738,7 +738,7 @@ body {
       </div>
 
       <!-- Reminders -->
-      <div class="proto-card" id="card-reminders" onclick="toggleCb('cbPeriodicPopups')">
+      <div class="proto-card" id="card-reminders" onclick="document.getElementById('tog-reminders').click()">
         <div class="card-icon">💬</div>
         <div class="card-text">
           <div class="card-title">Reminders</div>
@@ -978,13 +978,16 @@ function setProto(key, checked, focusLocked, isRed) {
   const tog = document.getElementById('tog-' + key);
   const card = document.getElementById('card-' + key);
   tog.checked = checked;
-  if (focusLocked && checked) {
+  const isLocked = focusLocked && checked;
+  if (isLocked) {
     tog.className = 'locked';
   } else {
     tog.className = isRed ? 'red' : '';
   }
   const activeClass = isRed ? 'active-red' : 'active';
-  card.className = 'proto-card' + (checked ? ` ${activeClass}` : '') + (key === 'strictMode' ? ' card-full' : '');
+  const fullClass   = key === 'strictMode' ? ' card-full' : '';
+  const lockedClass = isLocked ? ' locked-card' : '';
+  card.className = 'proto-card' + (checked ? ` ${activeClass}` : '') + fullClass + lockedClass;
 }
 
 function updateFocusBtn() {
@@ -1151,11 +1154,24 @@ async function stopFocus(isStrict) {
 // ──────────────────────────────────────────────
 // PANIC
 // ──────────────────────────────────────────────
+let panicTimer = null;
+
 function onPanicClick() {
-  panicActive = !panicActive;
   if (panicActive) {
-    invoke('kill_browsers').catch(()=>{});
+    // manually cancel panic early
+    panicActive = false;
+    if (panicTimer) { clearTimeout(panicTimer); panicTimer = null; }
+    updateFocusBtn();
+    return;
   }
+  panicActive = true;
+  invoke('kill_browsers').catch(()=>{});
+  // Auto-disable after 15 minutes
+  panicTimer = setTimeout(() => {
+    panicActive = false;
+    panicTimer = null;
+    updateFocusBtn();
+  }, 15 * 60 * 1000);
   updateFocusBtn();
 }
 
@@ -1177,6 +1193,10 @@ function spin(which, dir) {
 }
 
 async function confirmFocus() {
+  if (focusH === 0 && focusM === 0) {
+    alert('Please set a duration of at least 1 minute.');
+    return;
+  }
   closeOverlay('overlayFocus');
   try {
     await invoke('start_focus', { hours: focusH, mins: focusM, isStrict: focusIsStrict });
@@ -1194,14 +1214,27 @@ async function confirmFocus() {
 
 function confirmPass() {
   const pass = document.getElementById('passInput').value;
-  closeOverlay('overlayPass');
-  // For demo: store/compare password — in production Rust backend handles this
-  if (document.getElementById('overlayPassTitle').textContent.includes('Stop')) {
-    // stopping
+  const isStopping = document.getElementById('overlayPassTitle').textContent.includes('Stop');
+
+  if (isStopping) {
+    // Must match the stored parentPassword to stop
+    if (!parentPassword || pass !== parentPassword) {
+      document.getElementById('passInput').value = '';
+      document.getElementById('passInput').placeholder = 'Wrong password!';
+      document.getElementById('passInput').focus();
+      return;
+    }
+    closeOverlay('overlayPass');
     stopFocus(false);
   } else {
-    // starting with parents control
+    // Starting — password must not be blank
+    if (!pass.trim()) {
+      document.getElementById('passInput').placeholder = 'Password cannot be empty!';
+      document.getElementById('passInput').focus();
+      return;
+    }
     parentPassword = pass;
+    closeOverlay('overlayPass');
     focusIsStrict = false;
     document.getElementById('overlayFocusTitle').textContent = 'Set Safe Focus Duration';
     document.getElementById('overlayFocus').classList.add('visible');
