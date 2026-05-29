@@ -1,0 +1,81 @@
+{
+  "build": {
+    "beforeDevCommand": "",
+    "beforeBuildCommand": "",
+    "devPath": "src/index.html",
+    "distDir": "src",
+    "withGlobalTauri": true
+  },
+  "package": {
+    "productName": "RasFocus",
+    "version": "2.0.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "shell": { "all": false, "open": true },
+      "dialog": { "all": true },
+      "notification": { "all": true },
+      "window": { "all": true }
+    },
+    "bundle": {
+      "active": true,
+      "targets": ["nsis", "msi"],
+      "identifier": "com.rasfocus.app",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": "",
+        "wix": {},
+        "nsis": {
+          "installerIcon": "icons/icon.ico",
+          "headerImage": null,
+          "sidebarImage": null,
+          "installMode": "perMachine",
+          "languages": ["English"],
+          "displayLanguageSelector": false
+        }
+      },
+      "resources": [],
+      "externalBin": [],
+      "copyright": "",
+      "category": "Utility",
+      "shortDescription": "Adult Content & Distraction Blocker",
+      "longDescription": "RasFocus helps you block adult content, enforce safe search, and stay focused with robust protocol controls."
+    },
+    "security": {
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'"
+    },
+    "updater": {
+      "active": false
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "resizable": true,
+        "title": "RasFocus",
+        "width": 900,
+        "height": 640,
+        "minWidth": 820,
+        "minHeight": 580,
+        "center": true,
+        "decorations": true,
+        "alwaysOnTop": false,
+        "skipTaskbar": false,
+        "fileDropEnabled": false
+      }
+    ],
+    "systemTray": {
+      "iconPath": "icons/icon.ico",
+      "iconAsTemplate": true,
+      "menuOnLeftClick": true
+    }
+  }
+}

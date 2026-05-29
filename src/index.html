@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RasFocus – Adult Block & Strict Protocols</title>
+<style>
+/* =====================================================
+   COLOR PALETTE (mirrors tab_adult.cpp constants)
+   ===================================================== */
+:root {
+  --teal:       #0CA8B0;
+  --teal-hover: #1EB9C3;
+  --teal-light: #DCF8FA;
+  --dark:       #23232D;
+  --gray-text:  #82828C;
+  --border:     #D7DEE6;
+  --white:      #FFFFFF;
+  --bg:         #F6F9FC;
+  --bg-hover:   #E8F6F8;
+  --red:        #DC3C32;
+  --green:      #22A050;
+  --orange:     #F08C1E;
+  --card-bg:    #FCFEFF;
+  --overlay:    rgba(10,12,20,0.75);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--dark);
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* =====================================================
+   TOP BAR
+   ===================================================== */
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px 10px;
+  flex-wrap: wrap;
+  border-bottom: 1.5px solid var(--border);
+  background: var(--white);
+  flex-shrink: 0;
+}
+
+/* Buttons */
+.btn {
+  border: none;
+  border-radius: 5px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0 14px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: filter 0.15s;
+  white-space: nowrap;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn-green  { background: var(--green);  color: #fff; }
+.btn-red    { background: var(--red);    color: #fff; }
+.btn-orange { background: var(--orange); color: #fff; }
+.btn-teal   { background: var(--teal);   color: #fff; }
+.btn-ghost  { background: var(--white);  color: var(--dark); border: 1.5px solid var(--border); }
+
+/* Dropdowns */
+.dropdown-wrap { position: relative; }
+.dropdown-btn {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--dark);
+  height: 32px;
+  padding: 0 28px 0 10px;
+  cursor: pointer;
+  appearance: none;
+  min-width: 110px;
+}
+.dropdown-btn:hover { background: var(--bg-hover); }
+
+/* =====================================================
+   2-COLUMN CONTENT
+   ===================================================== */
+.content {
+  display: grid;
+  grid-template-columns: 390px 1fr;
+  gap: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.col {
+  padding: 16px 20px;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.col-left  { border-right: 1.5px solid var(--border); }
+
+.section-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 10px;
+  margin-top: 4px;
+}
+
+/* =====================================================
+   CHECKBOX ROWS
+   ===================================================== */
+.cb-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  cursor: pointer;
+  border-radius: 4px;
+  padding-left: 2px;
+  transition: background 0.12s;
+}
+.cb-row:hover { background: var(--bg-hover); }
+
+.cb-box {
+  width: 17px;
+  height: 17px;
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  background: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+  font-size: 11px;
+  color: #fff;
+}
+.cb-box.checked {
+  background: var(--teal);
+  border-color: var(--teal);
+}
+.cb-box.locked {
+  background: var(--gray-text);
+  border-color: var(--gray-text);
+}
+.cb-label { font-size: 13px; }
+.cb-row:hover .cb-label { color: var(--teal); }
+
+/* =====================================================
+   CUSTOM KEYWORDS
+   ===================================================== */
+.kw-input-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.kw-input {
+  flex: 1;
+  height: 30px;
+  border: 1.5px solid var(--border);
+  border-radius: 5px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  background: var(--white);
+  transition: border-color 0.15s;
+}
+.kw-input:focus { border-color: var(--teal); }
+.kw-table {
+  border: 1.5px solid var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 8px;
+  background: var(--white);
+  min-height: 60px;
+}
+.kw-row {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.kw-row:last-child { border-bottom: none; }
+.kw-row:nth-child(even) { background: #F8FBFD; }
+.kw-row span { flex: 1; }
+.kw-del {
+  cursor: pointer;
+  color: var(--gray-text);
+  font-size: 15px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: color 0.12s;
+}
+.kw-del:hover { color: var(--red); }
+.kw-empty {
+  text-align: center;
+  color: var(--gray-text);
+  font-size: 12px;
+  padding: 18px 0;
+}
+
+/* =====================================================
+   STRICT PROTOCOL CARDS
+   ===================================================== */
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.card-full { grid-column: 1 / -1; }
+
+.proto-card {
+  background: var(--card-bg);
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  position: relative;
+  min-height: 66px;
+}
+.proto-card:hover:not(.locked-card) { background: var(--bg-hover); }
+.proto-card.active {
+  background: var(--teal-light);
+  border-color: var(--teal);
+}
+.proto-card.active-red { border-color: var(--red); background: #FFF0EF; }
+
+.proto-card .card-icon {
+  font-size: 22px;
+  color: var(--gray-text);
+  flex-shrink: 0;
+  width: 26px;
+  text-align: center;
+}
+.proto-card.active .card-icon { color: var(--teal); }
+.proto-card.active-red .card-icon { color: var(--red); }
+
+.card-text { flex: 1; }
+.card-title { font-size: 13px; font-weight: 700; color: var(--dark); }
+.card-desc  { font-size: 11px; color: var(--gray-text); margin-top: 2px; }
+
+.card-right { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+
+/* Toggle switch */
+.toggle {
+  position: relative;
+  width: 34px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.toggle input { display: none; }
+.toggle-track {
+  width: 34px;
+  height: 18px;
+  background: var(--border);
+  border-radius: 9px;
+  position: absolute;
+  top: 0; left: 0;
+  transition: background 0.2s;
+}
+.toggle input:checked ~ .toggle-track { background: var(--teal); }
+.toggle input.locked:checked ~ .toggle-track { background: var(--gray-text); }
+.toggle input.red:checked ~ .toggle-track { background: var(--red); }
+.toggle-thumb {
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: left 0.2s;
+  pointer-events: none;
+}
+.toggle input:checked ~ .toggle-thumb { left: 18px; }
+
+.info-btn {
+  width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: #AAB4BE;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.info-btn:hover { background: var(--teal); }
+
+/* Active bar */
+.proto-card.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 10px; bottom: 10px;
+  width: 3px;
+  background: var(--teal);
+  border-radius: 2px;
+}
+.proto-card.active-red::before { background: var(--red); }
+
+/* =====================================================
+   ADVANCED OPTIONS
+   ===================================================== */
+.adv-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* =====================================================
+   BADGES (status bar)
+   ===================================================== */
+.badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px 20px;
+  border-top: 1.5px solid var(--border);
+  background: var(--white);
+  flex-shrink: 0;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--gray-text);
+  transition: all 0.2s;
+}
+.badge.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+
+/* =====================================================
+   OVERLAYS
+   ===================================================== */
+.overlay-backdrop {
+  position: fixed; inset: 0;
+  background: var(--overlay);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.overlay-backdrop.visible { display: flex; }
+
+.overlay-card {
+  background: var(--white);
+  border: 2px solid var(--teal);
+  border-radius: 10px;
+  overflow: hidden;
+  width: 420px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  animation: popIn 0.18s ease-out;
+}
+@keyframes popIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.overlay-card.wide { width: 500px; }
+
+.overlay-header {
+  background: var(--teal);
+  color: #fff;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.overlay-body { padding: 20px; }
+
+.spinner-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 16px 0;
+  justify-content: center;
+}
+.spinner-group {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.spinner-group label {
+  font-size: 13px;
+  font-weight: 700;
+  margin-right: 10px;
+}
+.spin-btn {
+  width: 32px;
+  height: 36px;
+  border: 1.5px solid var(--border);
+  background: var(--border);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s;
+}
+.spin-btn:hover { background: var(--bg-hover); }
+.spin-val {
+  width: 56px;
+  height: 36px;
+  border-top: 1.5px solid var(--border);
+  border-bottom: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--white);
+}
+
+.overlay-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+.pass-input {
+  width: 100%;
+  height: 40px;
+  border: 2px solid var(--teal);
+  border-radius: 5px;
+  padding: 0 12px;
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  margin-top: 12px;
+  letter-spacing: 3px;
+}
+
+.long-text-input {
+  width: 100%;
+  height: 180px;
+  border: 2px solid var(--teal);
+  border-radius: 5px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  margin-top: 12px;
+  resize: none;
+  line-height: 1.5;
+}
+
+/* =====================================================
+   QUOTE POPUP (fullscreen / small)
+   ===================================================== */
+.quote-popup {
+  position: fixed; inset: 0;
+  background: rgba(14,16,24,0.97);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  text-align: center;
+  padding: 40px;
+}
+.quote-popup.visible { display: flex; flex-direction: column; gap: 20px; }
+.quote-popup .quote-text {
+  color: #fff;
+  font-size: 32px;
+  font-weight: 700;
+  max-width: 700px;
+  line-height: 1.4;
+}
+.quote-popup .quote-hint {
+  color: rgba(255,255,255,0.6);
+  font-size: 15px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* Tooltip */
+.tooltip-wrap { position: relative; display: inline-flex; }
+.tooltip-wrap .tooltip-box {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--dark);
+  color: #fff;
+  font-size: 11px;
+  padding: 5px 9px;
+  border-radius: 5px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 50;
+}
+.tooltip-wrap:hover .tooltip-box { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- =====================================================
+     TOP BAR (Row 1 controls)
+     ===================================================== -->
+<div class="top-bar">
+
+  <!-- Safe Focus Button -->
+  <button class="btn btn-green" id="btnSafeFocus" onclick="onSafeFocusClick()">
+    🛡 Safe Focus
+  </button>
+
+  <!-- Control Mode Dropdown -->
+  <select class="dropdown-btn" id="selControl" onchange="onControlModeChange(this.value)">
+    <option value="0">Self Control</option>
+    <option value="1">Parents Control</option>
+    <option value="2">Long Text</option>
+  </select>
+
+  <!-- Religion Dropdown -->
+  <select class="dropdown-btn" id="selReligion" onchange="onReligionChange(this.value)">
+    <option value="0">Muslim</option>
+    <option value="1">Hindu</option>
+    <option value="2">Christian</option>
+    <option value="3">Universal</option>
+  </select>
+
+  <!-- Language Dropdown -->
+  <select class="dropdown-btn" id="selLanguage" onchange="onLanguageChange(this.value)">
+    <option value="0">Bangla</option>
+    <option value="1">English</option>
+  </select>
+
+  <div style="flex:1"></div>
+
+  <!-- Strict Focus -->
+  <div class="tooltip-wrap">
+    <button class="btn btn-green" id="btnStrictFocus" onclick="onStrictFocusClick()">
+      🔒 Strict Focus
+    </button>
+    <span class="tooltip-box">Strict Focus locks safe browsing checkboxes + task manager block for a set duration.</span>
+  </div>
+
+  <!-- Panic Mode -->
+  <div class="tooltip-wrap">
+    <button class="btn btn-red" id="btnPanic" onclick="onPanicClick()">
+      🚨 Panic Mode
+    </button>
+    <span class="tooltip-box">Panic Mode closes all browsers for 15 minutes immediately.</span>
+  </div>
+
+</div>
+
+<!-- =====================================================
+     2-COLUMN LAYOUT
+     ===================================================== -->
+<div class="content">
+
+  <!-- ─── LEFT COLUMN ─── -->
+  <div class="col col-left">
+
+    <div class="section-label">Safe Browsing Rules</div>
+
+    <div class="cb-row" onclick="toggleCb('cbAdultWeb')">
+      <div class="cb-box" id="box-cbAdultWeb">✓</div>
+      <span class="cb-label">Block Adult Websites</span>
+    </div>
+    <div class="cb-row" onclick="toggleCb('cbHardcore')">
+      <div class="cb-box" id="box-cbHardcore">✓</div>
+      <span class="cb-label">Block Hardcore Keywords</span>
+    </div>
+    <div class="cb-row" onclick="toggleCb('cbRomantic')">
+      <div class="cb-box" id="box-cbRomantic">✓</div>
+      <span class="cb-label">Block Romantic / Softcore</span>
+    </div>
+    <div class="cb-row" onclick="toggleCb('cbFbReels')">
+      <div class="cb-box" id="box-cbFbReels">✓</div>
+      <span class="cb-label">Block FB Reels / YT Shorts</span>
+    </div>
+
+    <div class="section-label" style="margin-top:20px">Custom Keywords</div>
+
+    <div class="kw-input-row">
+      <input class="kw-input" id="kwInput" placeholder="e.g. badword"
+             onkeydown="if(event.key==='Enter') addKeyword()"
+             maxlength="40" />
+      <button class="btn btn-teal" onclick="addKeyword()">+ Add</button>
+    </div>
+
+    <div class="kw-table" id="kwTable"></div>
+
+    <!-- Blocked count -->
+    <div style="margin-top:14px; font-size:12px; color:var(--gray-text)">
+      Total blocked sessions: <strong id="blockedCount" style="color:var(--teal)">0</strong>
+    </div>
+
+  </div>
+
+  <!-- ─── RIGHT COLUMN ─── -->
+  <div class="col col-right">
+
+    <div class="section-label">Strict Protocol Settings</div>
+
+    <div class="cards-grid">
+      <!-- Silent Monitor -->
+      <div class="proto-card" id="card-silentUrl" onclick="toggleProto('silentUrl')">
+        <div class="card-icon">🔍</div>
+        <div class="card-text">
+          <div class="card-title">Silent Monitor</div>
+          <div class="card-desc">Log &amp; detect URLs.</div>
+        </div>
+        <div class="card-right">
+          <label class="toggle" onclick="event.stopPropagation()">
+            <input type="checkbox" id="tog-silentUrl" onchange="toggleProto('silentUrl')">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+          <div class="info-btn tooltip-wrap">i<span class="tooltip-box">Records browser URLs silently to a log file for review.</span></div>
+        </div>
+      </div>
+
+      <!-- Family DNS -->
+      <div class="proto-card" id="card-dnsFilter" onclick="toggleProto('dnsFilter')">
+        <div class="card-icon">🛡</div>
+        <div class="card-text">
+          <div class="card-title">Family DNS</div>
+          <div class="card-desc">Cloudflare safe DNS.</div>
+        </div>
+        <div class="card-right">
+          <label class="toggle" onclick="event.stopPropagation()">
+            <input type="checkbox" id="tog-dnsFilter" onchange="toggleProto('dnsFilter')">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+          <div class="info-btn tooltip-wrap">i<span class="tooltip-box">Sets system DNS to Cloudflare Family (1.1.1.3 / 1.0.0.3) to block adult domains.</span></div>
+        </div>
+      </div>
+
+      <!-- Safe Search -->
+      <div class="proto-card" id="card-safeSearch" onclick="toggleProto('safeSearch')">
+        <div class="card-icon">🔎</div>
+        <div class="card-text">
+          <div class="card-title">Safe Search</div>
+          <div class="card-desc">Force web SafeSearch.</div>
+        </div>
+        <div class="card-right">
+          <label class="toggle" onclick="event.stopPropagation()">
+            <input type="checkbox" id="tog-safeSearch" onchange="toggleProto('safeSearch')">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+          <div class="info-btn tooltip-wrap">i<span class="tooltip-box">Enforces Google/Bing/YouTube SafeSearch via registry policies + hosts file.</span></div>
+        </div>
+      </div>
+
+      <!-- Block Incognito -->
+      <div class="proto-card" id="card-incognito" onclick="toggleProto('incognito')">
+        <div class="card-icon">🕵</div>
+        <div class="card-text">
+          <div class="card-title">Block Incognito</div>
+          <div class="card-desc">Close private windows.</div>
+        </div>
+        <div class="card-right">
+          <label class="toggle" onclick="event.stopPropagation()">
+            <input type="checkbox" id="tog-incognito" onchange="toggleProto('incognito')">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+          <div class="info-btn tooltip-wrap">i<span class="tooltip-box">Detects and closes Incognito / InPrivate windows automatically.</span></div>
+        </div>
+      </div>
+
+      <!-- Strict Lock Mode -->
+      <div class="proto-card card-full" id="card-strictMode" onclick="toggleProto('strictMode')">
+        <div class="card-icon">🔒</div>
+        <div class="card-text">
+          <div class="card-title">Strict Lock Mode</div>
+          <div class="card-desc">Block Task Manager &amp; Regedit.</div>
+        </div>
+        <div class="card-right">
+          <label class="toggle" onclick="event.stopPropagation()">
+            <input type="checkbox" id="tog-strictMode" onchange="toggleProto('strictMode')">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+          <div class="info-btn tooltip-wrap">i<span class="tooltip-box">Closes Task Manager, Regedit, Control Panel if opened while active.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced Options -->
+    <div class="section-label" style="margin-top:16px">Advanced Options</div>
+
+    <div class="adv-grid">
+      <!-- 24h Lock -->
+      <div class="proto-card" id="card-24hLock" onclick="on24hLockClick()">
+        <div class="card-icon" id="icon-24h">⏰</div>
+        <div class="card-text">
+          <div class="card-title">24-Hour Lock</div>
+          <div class="card-desc" id="desc-24h">Cannot be undone.</div>
+        </div>
+        <div class="card-right">
+          <label class="toggle" onclick="event.stopPropagation()">
+            <input type="checkbox" id="tog-24hLock" disabled>
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+          <div class="info-btn tooltip-wrap">i<span class="tooltip-box">Locks all adult block settings for exactly 24 hours. This CANNOT be undone.</span></div>
+        </div>
+      </div>
+
+      <!-- Reminders -->
+      <div class="proto-card" id="card-reminders" onclick="toggleCb('cbPeriodicPopups')">
+        <div class="card-icon">💬</div>
+        <div class="card-text">
+          <div class="card-title">Reminders</div>
+          <div class="card-desc">Fullscreen quote every 25 mins.</div>
+        </div>
+        <div class="card-right">
+          <label class="toggle" onclick="event.stopPropagation()">
+            <input type="checkbox" id="tog-reminders" onchange="toggleCb('cbPeriodicPopups')">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+          <div class="info-btn tooltip-wrap">i<span class="tooltip-box">Shows a fullscreen motivational quote popup every 25 minutes while Focus is active.</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- =====================================================
+     BADGES (Active Protections)
+     ===================================================== -->
+<div class="badges-row" id="badgesRow">
+  <span style="font-size:12px; font-weight:700; color:var(--teal); margin-right:4px;">Active Protections:</span>
+  <span class="badge" id="badge-urlMonitor">🔍 URL Monitor</span>
+  <span class="badge" id="badge-dnsFilter">🛡 DNS Filter</span>
+  <span class="badge" id="badge-safeSearch">🔎 SafeSearch</span>
+  <span class="badge" id="badge-noIncognito">🕵 No Incognito</span>
+  <span class="badge" id="badge-strictLock">🔒 Strict Lock</span>
+  <span class="badge" id="badge-focusActive">🎯 Focus Active</span>
+</div>
+
+<!-- =====================================================
+     OVERLAYS
+     ===================================================== -->
+
+<!-- Focus Duration Overlay -->
+<div class="overlay-backdrop" id="overlayFocus">
+  <div class="overlay-card">
+    <div class="overlay-header" id="overlayFocusTitle">Set Focus Duration</div>
+    <div class="overlay-body">
+      <div class="spinner-row">
+        <div class="spinner-group">
+          <label>Hours:</label>
+          <button class="spin-btn" style="border-radius:4px 0 0 4px" onclick="spin('focusH',-1)">−</button>
+          <div class="spin-val" id="spinFocusH">1</div>
+          <button class="spin-btn" style="border-radius:0 4px 4px 0" onclick="spin('focusH',1)">+</button>
+        </div>
+        <div class="spinner-group">
+          <label>Mins:</label>
+          <button class="spin-btn" style="border-radius:4px 0 0 4px" onclick="spin('focusM',-1)">−</button>
+          <div class="spin-val" id="spinFocusM">0</div>
+          <button class="spin-btn" style="border-radius:0 4px 4px 0" onclick="spin('focusM',1)">+</button>
+        </div>
+      </div>
+      <div class="overlay-btns">
+        <button class="btn btn-ghost" onclick="closeOverlay('overlayFocus')">Cancel</button>
+        <button class="btn btn-teal" onclick="confirmFocus()">Start Focus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Password Overlay (Parents Control) -->
+<div class="overlay-backdrop" id="overlayPass">
+  <div class="overlay-card">
+    <div class="overlay-header" id="overlayPassTitle">Enter Parents' Password</div>
+    <div class="overlay-body">
+      <input type="password" class="pass-input" id="passInput"
+             placeholder="Type password here..."
+             maxlength="20" />
+      <div class="overlay-btns">
+        <button class="btn btn-ghost" onclick="closeOverlay('overlayPass')">Cancel</button>
+        <button class="btn btn-teal" onclick="confirmPass()">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Long Text Overlay -->
+<div class="overlay-backdrop" id="overlayLongText">
+  <div class="overlay-card wide">
+    <div class="overlay-header">Enter Your Commitment</div>
+    <div class="overlay-body">
+      <p style="font-size:12px; color:var(--gray-text)">Write your reason or commitment for blocking. This will be shown when tempted.</p>
+      <textarea class="long-text-input" id="longTextInput"
+                placeholder="Write your commitment here (up to 2500 characters)..."
+                maxlength="2500"></textarea>
+      <div class="overlay-btns">
+        <button class="btn btn-ghost" onclick="closeOverlay('overlayLongText')">Cancel</button>
+        <button class="btn btn-teal" onclick="confirmLongText()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quote Popup -->
+<div class="quote-popup" id="quotePopup" onclick="closeQuote()">
+  <div class="quote-text" id="quoteText"></div>
+  <div class="quote-hint">Press ESC or click to close</div>
+</div>
+
+<!-- =====================================================
+     JAVASCRIPT
+     ===================================================== -->
+<script>
+const { invoke } = window.__TAURI__.tauri;
+
+// ──────────────────────────────────────────────
+// STATE (mirrors C++ static vars)
+// ──────────────────────────────────────────────
+let state = {
+  adult: {
+    cb_adult_web: true, cb_fb_reels: true, cb_hardcore: true, cb_romantic: true,
+    control_mode: 0, adult_religion: 0, adult_language: 0, total_blocked_count: 0,
+    cb_periodic_popups: false, cb_24h_lock: false, lock_24h_end_ms: 0,
+    is_adult_focus_active: false, focus_end_ms: 0, custom_keywords: []
+  },
+  strict: {
+    cb_silent_url: true, cb_dns_filter: false, cb_safe_search: true,
+    cb_incognito: true, cb_strict_mode: false,
+    is_strict_focus_active: false, strict_focus_end_ms: 0
+  }
+};
+
+let focusIsStrict = false;
+let focusH = 1, focusM = 0;
+let panicActive = false;
+let longText = '';
+let parentPassword = '';
+
+// Quotes database (mirrors C++ quotes)
+const quotes = {
+  Muslim: [
+    { bn: '"মুমিনদের বলুন, তারা যেন তাদের দৃষ্টি নত রাখে।" — (সূরা আন-নূর: ৩০)', en: 'Tell the believing men to reduce their vision and guard their private parts. (Surah An-Nur: 30)' },
+    { bn: '"লজ্জাশীলতা ইমানের অঙ্গ।" — (সহিহ মুসলিম)', en: 'Modesty is a branch of faith. (Sahih Muslim)' }
+  ],
+  Hindu: [
+    { bn: '"যে মনকে নিয়ন্ত্রণ করতে পারে না, তার মন তার সবচেয়ে বড় শত্রু।" — (ভগবদ্গীতা)', en: 'For him who has not conquered the mind, the mind is the greatest enemy. (Bhagavad Gita)' }
+  ],
+  Christian: [
+    { bn: '"যে কেউ কোনো স্ত্রীর দিকে কামনার দৃষ্টিতে তাকায়…" — (মথি ৫:২৮)', en: 'Anyone who looks at a woman lustfully has already committed adultery in his heart. (Matthew 5:28)' }
+  ],
+  Universal: [
+    { bn: '"সফলতা আসে ফোকাস থেকে, ডিস্ট্রাকশন থেকে নয়।"', en: 'Success comes from focus, not from distraction.' },
+    { bn: '"যে নিজের মনকে নিয়ন্ত্রণ করতে পারে, সে পৃথিবী জয় করতে পারে।"', en: 'He who can control his mind can conquer the world.' }
+  ]
+};
+
+const religionNames = ['Muslim', 'Hindu', 'Christian', 'Universal'];
+
+function getQuote() {
+  const religion = religionNames[state.adult.adult_religion];
+  const pool = quotes[religion] || quotes.Universal;
+  const q = pool[Math.floor(Math.random() * pool.length)];
+  return state.adult.adult_language === 0 ? q.bn : q.en;
+}
+
+// ──────────────────────────────────────────────
+// LOAD STATE FROM RUST BACKEND
+// ──────────────────────────────────────────────
+async function loadState() {
+  try {
+    state = await invoke('get_state');
+  } catch(e) {
+    console.warn('Backend not available, using defaults', e);
+  }
+  applyStateToUI();
+}
+
+// ──────────────────────────────────────────────
+// APPLY STATE → DOM
+// ──────────────────────────────────────────────
+function applyStateToUI() {
+  const a = state.adult;
+  const s = state.strict;
+
+  // Checkboxes
+  setCb('cbAdultWeb', a.cb_adult_web, a.is_adult_focus_active && a.cb_adult_web);
+  setCb('cbHardcore',  a.cb_hardcore,  a.is_adult_focus_active && a.cb_hardcore);
+  setCb('cbRomantic',  a.cb_romantic,  a.is_adult_focus_active && a.cb_romantic);
+  setCb('cbFbReels',   a.cb_fb_reels,  a.is_adult_focus_active && a.cb_fb_reels);
+
+  // Dropdowns
+  document.getElementById('selControl').value  = a.control_mode;
+  document.getElementById('selReligion').value  = a.adult_religion;
+  document.getElementById('selLanguage').value  = a.adult_language;
+
+  // Safe Focus button
+  updateFocusBtn();
+
+  // Strict protocols
+  setProto('silentUrl', s.cb_silent_url, a.is_adult_focus_active);
+  setProto('dnsFilter', s.cb_dns_filter, a.is_adult_focus_active);
+  setProto('safeSearch', s.cb_safe_search, a.is_adult_focus_active);
+  setProto('incognito', s.cb_incognito, a.is_adult_focus_active);
+  setProto('strictMode', s.cb_strict_mode, a.is_adult_focus_active, true);
+
+  // 24h lock
+  const tog24 = document.getElementById('tog-24hLock');
+  tog24.checked = a.cb_24h_lock;
+  const card24 = document.getElementById('card-24hLock');
+  card24.className = 'proto-card' + (a.cb_24h_lock ? ' active' : '');
+  if (a.cb_24h_lock) {
+    const nowMs = Date.now();
+    const leftMs = Math.max(0, a.lock_24h_end_ms - nowMs);
+    const h = Math.floor(leftMs / 3600000);
+    const m = Math.floor((leftMs % 3600000) / 60000);
+    document.getElementById('desc-24h').textContent = `${h}h ${m}m remaining`;
+  } else {
+    document.getElementById('desc-24h').textContent = 'Cannot be undone.';
+  }
+
+  // Reminders
+  const togRem = document.getElementById('tog-reminders');
+  togRem.checked = a.cb_periodic_popups;
+  document.getElementById('card-reminders').className =
+    'proto-card' + (a.cb_periodic_popups ? ' active' : '');
+
+  // Keywords table
+  renderKeywords();
+
+  // Blocked count
+  document.getElementById('blockedCount').textContent = a.total_blocked_count;
+
+  // Badges
+  updateBadges();
+}
+
+function setCb(id, checked, locked) {
+  const box = document.getElementById('box-' + id);
+  box.textContent = checked ? '✓' : '';
+  box.className = 'cb-box' + (checked ? (locked ? ' locked' : ' checked') : '');
+}
+
+function setProto(key, checked, focusLocked, isRed) {
+  const tog = document.getElementById('tog-' + key);
+  const card = document.getElementById('card-' + key);
+  tog.checked = checked;
+  if (focusLocked && checked) {
+    tog.className = 'locked';
+  } else {
+    tog.className = isRed ? 'red' : '';
+  }
+  const activeClass = isRed ? 'active-red' : 'active';
+  card.className = 'proto-card' + (checked ? ` ${activeClass}` : '') + (key === 'strictMode' ? ' card-full' : '');
+}
+
+function updateFocusBtn() {
+  const a = state.adult;
+  const btn = document.getElementById('btnSafeFocus');
+  const nowMs = Date.now();
+
+  if (a.is_adult_focus_active) {
+    btn.className = 'btn btn-red';
+    if (a.cb_24h_lock) {
+      const left = Math.max(0, a.lock_24h_end_ms - nowMs);
+      const h = Math.floor(left/3600000);
+      const m = Math.floor((left%3600000)/60000);
+      btn.textContent = `🔒 Lock (${h}h ${m}m)`;
+    } else if (a.control_mode === 0) {
+      const left = Math.max(0, a.focus_end_ms - nowMs);
+      const m = Math.ceil(left/60000);
+      btn.textContent = `🔒 Lock (${m}m)`;
+    } else {
+      btn.textContent = '🔒 Stop Focus';
+    }
+  } else {
+    btn.className = 'btn btn-green';
+    btn.textContent = '🛡 Safe Focus';
+  }
+
+  const strictBtn = document.getElementById('btnStrictFocus');
+  if (state.strict.is_strict_focus_active) {
+    strictBtn.className = 'btn btn-red';
+    const left = Math.max(0, state.strict.strict_focus_end_ms - nowMs);
+    const m = Math.ceil(left/60000);
+    strictBtn.textContent = `🔒 Lock (${m}m)`;
+  } else {
+    strictBtn.className = 'btn btn-green';
+    strictBtn.textContent = '🔒 Strict Focus';
+  }
+
+  const panicBtn = document.getElementById('btnPanic');
+  panicBtn.className = 'btn ' + (panicActive ? 'btn-orange' : 'btn-red');
+  panicBtn.textContent = panicActive ? '⚡ Panic Active' : '🚨 Panic Mode';
+}
+
+function updateBadges() {
+  const s = state.strict;
+  const a = state.adult;
+  const set = (id, active) => {
+    document.getElementById(id).className = 'badge' + (active ? ' active' : '');
+  };
+  set('badge-urlMonitor', s.cb_silent_url);
+  set('badge-dnsFilter',  s.cb_dns_filter);
+  set('badge-safeSearch', s.cb_safe_search);
+  set('badge-noIncognito', s.cb_incognito);
+  set('badge-strictLock', s.cb_strict_mode);
+  set('badge-focusActive', a.is_adult_focus_active || s.is_strict_focus_active);
+}
+
+// ──────────────────────────────────────────────
+// CHECKBOX TOGGLES
+// ──────────────────────────────────────────────
+async function toggleCb(key) {
+  const a = state.adult;
+  const locked = a.is_adult_focus_active;
+
+  if (key === 'cbPeriodicPopups') {
+    a.cb_periodic_popups = !a.cb_periodic_popups;
+  } else {
+    const map = { cbAdultWeb:'cb_adult_web', cbHardcore:'cb_hardcore',
+                  cbRomantic:'cb_romantic',  cbFbReels:'cb_fb_reels' };
+    const prop = map[key];
+    if (locked && a[prop]) return; // can't untick while locked
+    a[prop] = !a[prop];
+  }
+
+  applyStateToUI();
+  try { await invoke('save_adult_settings', { settings: a }); } catch(e) {}
+}
+
+// ──────────────────────────────────────────────
+// PROTOCOL TOGGLES
+// ──────────────────────────────────────────────
+async function toggleProto(key) {
+  const s = state.strict;
+  const focusLocked = state.adult.is_adult_focus_active;
+  const map = {
+    silentUrl: 'cb_silent_url', dnsFilter: 'cb_dns_filter',
+    safeSearch: 'cb_safe_search', incognito: 'cb_incognito', strictMode: 'cb_strict_mode'
+  };
+  const prop = map[key];
+  if (focusLocked && s[prop]) return; // locked on → can't turn off
+
+  s[prop] = !s[prop];
+
+  if (key === 'dnsFilter') {
+    try { await invoke('toggle_dns_filter', { enable: s.cb_dns_filter }); } catch(e) {}
+    if (!s.cb_dns_filter) alert('Family DNS disabled.\nPlease restart your browsers to apply changes.');
+  } else if (key === 'safeSearch') {
+    try { await invoke('toggle_safe_search', { enable: s.cb_safe_search }); } catch(e) {}
+    if (!s.cb_safe_search) {
+      if (confirm('Safe Search policies removed.\n\nClose Chrome/Edge/Brave now to apply?')) {
+        try { await invoke('kill_browsers'); } catch(e) {}
+      }
+    }
+  } else {
+    try { await invoke('save_strict_settings', { settings: s }); } catch(e) {}
+  }
+
+  applyStateToUI();
+}
+
+// ──────────────────────────────────────────────
+// FOCUS BUTTONS
+// ──────────────────────────────────────────────
+function onSafeFocusClick() {
+  const a = state.adult;
+  if (a.is_adult_focus_active) {
+    if (a.cb_24h_lock) return; // untouchable
+    if (a.control_mode === 1) {
+      // parents control → password
+      document.getElementById('overlayPassTitle').textContent = 'Enter Password to Stop';
+      document.getElementById('overlayPass').classList.add('visible');
+      document.getElementById('passInput').value = '';
+      document.getElementById('passInput').focus();
+      return;
+    }
+    stopFocus(false);
+  } else {
+    if (a.control_mode === 2) {
+      document.getElementById('overlayLongText').classList.add('visible');
+      document.getElementById('longTextInput').value = longText;
+      document.getElementById('longTextInput').focus();
+    } else if (a.control_mode === 1) {
+      document.getElementById('overlayPassTitle').textContent = 'Enter Parents\' Password';
+      document.getElementById('overlayPass').classList.add('visible');
+      document.getElementById('passInput').value = '';
+      document.getElementById('passInput').focus();
+    } else {
+      focusIsStrict = false;
+      document.getElementById('overlayFocusTitle').textContent = 'Set Safe Focus Duration';
+      document.getElementById('overlayFocus').classList.add('visible');
+    }
+  }
+}
+
+function onStrictFocusClick() {
+  if (state.strict.is_strict_focus_active) {
+    stopFocus(true);
+  } else {
+    focusIsStrict = true;
+    document.getElementById('overlayFocusTitle').textContent = 'Set Strict Focus Duration';
+    document.getElementById('overlayFocus').classList.add('visible');
+  }
+}
+
+async function stopFocus(isStrict) {
+  try { await invoke('stop_focus', { isStrict }); } catch(e) {}
+  if (isStrict) {
+    state.strict.is_strict_focus_active = false;
+  } else {
+    if (!state.adult.cb_24h_lock) state.adult.is_adult_focus_active = false;
+  }
+  applyStateToUI();
+}
+
+// ──────────────────────────────────────────────
+// PANIC
+// ──────────────────────────────────────────────
+function onPanicClick() {
+  panicActive = !panicActive;
+  if (panicActive) {
+    invoke('kill_browsers').catch(()=>{});
+  }
+  updateFocusBtn();
+}
+
+// ──────────────────────────────────────────────
+// OVERLAY HELPERS
+// ──────────────────────────────────────────────
+function closeOverlay(id) {
+  document.getElementById(id).classList.remove('visible');
+}
+
+function spin(which, dir) {
+  if (which === 'focusH') {
+    focusH = Math.max(0, Math.min(23, focusH + dir));
+    document.getElementById('spinFocusH').textContent = focusH;
+  } else {
+    focusM = Math.max(0, Math.min(59, focusM + dir));
+    document.getElementById('spinFocusM').textContent = focusM;
+  }
+}
+
+async function confirmFocus() {
+  closeOverlay('overlayFocus');
+  try {
+    await invoke('start_focus', { hours: focusH, mins: focusM, isStrict: focusIsStrict });
+  } catch(e) {}
+  const endMs = Date.now() + (focusH * 3600 + focusM * 60) * 1000;
+  if (focusIsStrict) {
+    state.strict.is_strict_focus_active = true;
+    state.strict.strict_focus_end_ms = endMs;
+  } else {
+    state.adult.is_adult_focus_active = true;
+    state.adult.focus_end_ms = endMs;
+  }
+  applyStateToUI();
+}
+
+function confirmPass() {
+  const pass = document.getElementById('passInput').value;
+  closeOverlay('overlayPass');
+  // For demo: store/compare password — in production Rust backend handles this
+  if (document.getElementById('overlayPassTitle').textContent.includes('Stop')) {
+    // stopping
+    stopFocus(false);
+  } else {
+    // starting with parents control
+    parentPassword = pass;
+    focusIsStrict = false;
+    document.getElementById('overlayFocusTitle').textContent = 'Set Safe Focus Duration';
+    document.getElementById('overlayFocus').classList.add('visible');
+  }
+}
+
+function confirmLongText() {
+  longText = document.getElementById('longTextInput').value;
+  closeOverlay('overlayLongText');
+  focusIsStrict = false;
+  document.getElementById('overlayFocusTitle').textContent = 'Set Safe Focus Duration';
+  document.getElementById('overlayFocus').classList.add('visible');
+}
+
+// ──────────────────────────────────────────────
+// 24H LOCK
+// ──────────────────────────────────────────────
+async function on24hLockClick() {
+  if (state.adult.cb_24h_lock) return; // already locked
+  if (!confirm('Are you sure? This locks all settings for 24 hours and CANNOT be undone.')) return;
+  try { await invoke('start_24h_lock'); } catch(e) {}
+  state.adult.cb_24h_lock = true;
+  state.adult.is_adult_focus_active = true;
+  state.adult.lock_24h_end_ms = Date.now() + 86400000;
+  applyStateToUI();
+}
+
+// ──────────────────────────────────────────────
+// CUSTOM KEYWORDS
+// ──────────────────────────────────────────────
+function renderKeywords() {
+  const table = document.getElementById('kwTable');
+  const kws = state.adult.custom_keywords;
+  if (kws.length === 0) {
+    table.innerHTML = '<div class="kw-empty">No custom keywords added yet</div>';
+    return;
+  }
+  table.innerHTML = kws.map((kw, i) =>
+    `<div class="kw-row">
+       <span>${escHtml(kw)}</span>
+       <span class="kw-del" onclick="removeKeyword(${i})">✕</span>
+     </div>`
+  ).join('');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function addKeyword() {
+  const input = document.getElementById('kwInput');
+  const kw = input.value.trim();
+  if (!kw) return;
+  if (state.adult.custom_keywords.includes(kw)) { input.value = ''; return; }
+  try { await invoke('add_custom_keyword', { keyword: kw }); } catch(e) {}
+  state.adult.custom_keywords.push(kw);
+  input.value = '';
+  renderKeywords();
+}
+
+async function removeKeyword(idx) {
+  if (state.adult.is_adult_focus_active) return;
+  const kw = state.adult.custom_keywords[idx];
+  try { await invoke('remove_custom_keyword', { keyword: kw }); } catch(e) {}
+  state.adult.custom_keywords.splice(idx, 1);
+  renderKeywords();
+}
+
+// ──────────────────────────────────────────────
+// DROPDOWN CHANGES
+// ──────────────────────────────────────────────
+async function onControlModeChange(val) {
+  state.adult.control_mode = parseInt(val);
+  try { await invoke('save_adult_settings', { settings: state.adult }); } catch(e) {}
+}
+async function onReligionChange(val) {
+  state.adult.adult_religion = parseInt(val);
+  try { await invoke('save_adult_settings', { settings: state.adult }); } catch(e) {}
+}
+async function onLanguageChange(val) {
+  state.adult.adult_language = parseInt(val);
+  try { await invoke('save_adult_settings', { settings: state.adult }); } catch(e) {}
+}
+
+// ──────────────────────────────────────────────
+// QUOTE POPUP
+// ──────────────────────────────────────────────
+function showQuote(fullscreen) {
+  const popup = document.getElementById('quotePopup');
+  document.getElementById('quoteText').textContent = getQuote();
+  popup.classList.add('visible');
+}
+function closeQuote() {
+  document.getElementById('quotePopup').classList.remove('visible');
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeQuote();
+    closeOverlay('overlayFocus');
+    closeOverlay('overlayPass');
+    closeOverlay('overlayLongText');
+  }
+});
+
+// ──────────────────────────────────────────────
+// PERIODIC POPUP TIMER
+// ──────────────────────────────────────────────
+let lastPopupTime = Date.now();
+setInterval(() => {
+  if (state.adult.cb_periodic_popups && state.adult.is_adult_focus_active) {
+    if (Date.now() - lastPopupTime >= 25 * 60 * 1000) {
+      showQuote(true);
+      lastPopupTime = Date.now();
+    }
+  }
+}, 10000);
+
+// ──────────────────────────────────────────────
+// TIMER: update countdown display every 5s
+// ──────────────────────────────────────────────
+setInterval(() => {
+  updateFocusBtn();
+  updateBadges();
+  // 24h lock countdown
+  if (state.adult.cb_24h_lock) {
+    const left = Math.max(0, state.adult.lock_24h_end_ms - Date.now());
+    if (left === 0) { state.adult.cb_24h_lock = false; state.adult.is_adult_focus_active = false; }
+    const h = Math.floor(left/3600000);
+    const m = Math.floor((left%3600000)/60000);
+    document.getElementById('desc-24h').textContent =
+      left > 0 ? `${h}h ${m}m remaining` : 'Cannot be undone.';
+  }
+  // Focus expiry
+  if (state.adult.is_adult_focus_active && state.adult.control_mode === 0
+      && !state.adult.cb_24h_lock && Date.now() >= state.adult.focus_end_ms) {
+    state.adult.is_adult_focus_active = false;
+    applyStateToUI();
+  }
+  if (state.strict.is_strict_focus_active && Date.now() >= state.strict.strict_focus_end_ms) {
+    state.strict.is_strict_focus_active = false;
+    applyStateToUI();
+  }
+}, 5000);
+
+// ──────────────────────────────────────────────
+// INIT
+// ──────────────────────────────────────────────
+loadState();
+</script>
+</body>
+</html>
