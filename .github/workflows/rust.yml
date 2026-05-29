@@ -1,22 +1,70 @@
-name: Rust
+name: Build Windows EXE
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
-
-env:
-  CARGO_TERM_COLOR: always
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
+  build-windows:
+    runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
+      # ── 1. Code checkout ──────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Rust toolchain ─────────────────────────────────────────────
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      # ── 3. Rust cache (speeds up subsequent builds dramatically) ──────
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      # ── 4. Node.js (required by Tauri CLI) ────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # ── 5. Install Tauri CLI ──────────────────────────────────────────
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version "^1.6" --locked
+
+      # ── 6. Build the app (produces .exe installer + portable) ─────────
+      - name: Build Tauri app
+        run: cargo tauri build
+
+      # ── 7. Upload NSIS installer (.exe) ───────────────────────────────
+      - name: Upload NSIS installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: RasFocus-NSIS-Installer
+          path: target/release/bundle/nsis/*.exe
+          if-no-files-found: warn
+          retention-days: 30
+
+      # ── 8. Upload MSI installer ───────────────────────────────────────
+      - name: Upload MSI installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: RasFocus-MSI-Installer
+          path: target/release/bundle/msi/*.msi
+          if-no-files-found: warn
+          retention-days: 30
+
+      # ── 9. Upload raw .exe binary ─────────────────────────────────────
+      - name: Upload raw binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: RasFocus-Binary
+          path: target/release/rasfocus.exe
+          if-no-files-found: warn
+          retention-days: 30
