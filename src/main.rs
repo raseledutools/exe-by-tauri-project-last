@@ -653,15 +653,15 @@ mod keyboard_hook {
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::sync::OnceLock;
     use winapi::shared::minwindef::{LPARAM, LRESULT, WPARAM};
-    use winapi::shared::windef::HHOOK;
     use winapi::um::winuser::{
         CallNextHookEx, GetMessageW, SetWindowsHookExW, UnhookWindowsHookEx,
         KBDLLHOOKSTRUCT, MSG, WH_KEYBOARD_LL, WM_KEYDOWN, WM_SYSKEYDOWN,
-        VK_BACK, VK_RETURN, VK_ESCAPE, VK_SPACE,
+        VK_BACK, VK_RETURN, VK_ESCAPE,
     };
 
-    // Global hook handle — thread-local রাখি যাতে message loop একই thread এ থাকে
-    static HOOK_HANDLE: OnceLock<Mutex<Option<HHOOK>>> = OnceLock::new();
+    // Global hook handle — HHOOK (*mut HHOOK__) is not Send,
+    // তাই usize হিসেবে store করি (pointer-sized integer, Send safe)
+    static HOOK_HANDLE: OnceLock<Mutex<Option<usize>>> = OnceLock::new();
     static HOOK_RUNNING: AtomicBool = AtomicBool::new(false);
 
     // Shared state pointer — hook callback এ access করতে হবে
@@ -855,10 +855,10 @@ mod keyboard_hook {
                         return;
                     }
 
-                    // Hook handle store করো (uninstall এর জন্য)
+                    // Hook handle store করো usize হিসেবে (HHOOK Send না, usize Send)
                     let handle_store = HOOK_HANDLE.get_or_init(|| Mutex::new(None));
                     if let Ok(mut h) = handle_store.lock() {
-                        *h = Some(hook);
+                        *h = Some(hook as usize);
                     }
 
                     // Message loop — hook callback invoke করার জন্য দরকার
@@ -884,12 +884,13 @@ mod keyboard_hook {
 
     pub fn uninstall_hook() {
         HOOK_RUNNING.store(false, Ordering::SeqCst);
-        // Message loop এ WM_QUIT পাঠাও যাতে thread বের হয়
+        // usize থেকে HHOOK এ cast করে UnhookWindowsHookEx call করো
         unsafe {
             if let Some(store) = HOOK_HANDLE.get() {
-                if let Ok(h) = store.lock() {
-                    if let Some(hook) = *h {
-                        UnhookWindowsHookEx(hook);
+                if let Ok(mut h) = store.lock() {
+                    if let Some(raw) = h.take() {
+                        // SAFETY: raw হলো আগে store করা valid HHOOK pointer
+                        UnhookWindowsHookEx(raw as winapi::shared::windef::HHOOK);
                     }
                 }
             }
